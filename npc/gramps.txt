@@ -14,11 +14,11 @@
 //= - Progress is tracked per CHARACTER (Gramps_Kill1/2,
 //=   Gramps_ActiveBracket, Gramps_PenaltyFlag -- no # prefix).
 //= - Players can take lower-tier bounties if above max level, but
-//=   accepting an over-level quest flags Gramps_PenaltyFlag = 1,
-//=   reducing EXP payout to 1/4th. Taking a quest ON-LEVEL and
+//=   accepting an over-level bounty flags Gramps_PenaltyFlag = 1,
+//=   reducing EXP payout to 1/4th. Taking a bounty ON-LEVEL and
 //=   leveling past max during the hunt keeps Gramps_PenaltyFlag = 0
 //=   and yields 100% full EXP reward.
-//= - Ongoing quests can be abandoned via the dynamic main menu option
+//= - Ongoing bounties can be abandoned via the dynamic main menu option
 //=   with target details explicitly highlighted in the confirmation menu.
 //============================================================
 
@@ -27,19 +27,19 @@ prontera,147,172,5	script	Gramps	843,{
 
     mes "[Gramps]";
     mes "Hello there, adventurer! The Eden Group keeps me busy coordinating hunting bounties for mercenaries.";
-    mes "I have level-bracketed Turn-In quests available. You can even take lower-tier bounties if you prefer, though over-level bounties grant reduced EXP!";
+    mes "I have level-bracketed Turn-In bounties available. You can even take lower-tier bounties if you prefer, though over-level bounties grant reduced EXP!";
     next;
 
-    // Build dynamic menu based on active quest state
+    // Build dynamic menu based on active bounty state
     if (Gramps_ActiveBracket != 0) {
         .@quest_option$ = "Check / Turn-In Bounty:Abandon Ongoing Bounty";
     } else {
-        .@quest_option$ = "Check Turn-In Quests";
+        .@quest_option$ = "Check / Take Bounties";
     }
 
     .@menu = select(.@quest_option$ + ":Warp to Hunting Map:Cancel");
 
-    // ABANDON QUEST LOGIC
+    // ABANDON BOUNTY LOGIC
     if (Gramps_ActiveBracket != 0 && .@menu == 2) {
         // Resolve active bounty details for confirmation
         switch(Gramps_ActiveBracket) {
@@ -55,9 +55,9 @@ prontera,147,172,5	script	Gramps	843,{
         mes "Are you sure you want to give up on your current active bounty?";
         mes "Bounty: ^0055FF" + .@b_name$ + "^000000";
         mes "Progress: " + .@m1$ + " (" + Gramps_Kill1 + "/400), " + .@m2$ + " (" + Gramps_Kill2 + "/400)";
-        mes "\n^FF0000All progress on this quest will be permanently lost!^000000";
+        mes "\n^FF0000All progress on this bounty will be permanently lost!^000000";
         next;
-        if (select("No, keep quest:Yes, abandon bounty") == 2) {
+        if (select("No, keep bounty:Yes, abandon bounty") == 2) {
             Gramps_ActiveBracket = 0;
             Gramps_Kill1 = 0;
             Gramps_Kill2 = 0;
@@ -144,7 +144,7 @@ prontera,147,172,5	script	Gramps	843,{
         }
     }
 
-    // TURN-IN QUEST LOGIC
+    // TURN-IN BOUNTY LOGIC
     mes "[Gramps]";
     mes "Select a level bracket suitable for your current Base Level:";
     next;
@@ -181,7 +181,7 @@ prontera,147,172,5	script	Gramps	843,{
     }
     end;
 
-// Subroutine: Quest Handling Framework
+// Subroutine: Bounty Handling Framework
 OnHandleQuest:
     .@bracket_id = getarg(0);
     .@min_lv     = getarg(1);
@@ -207,7 +207,7 @@ OnHandleQuest:
     // REWARD TURN-IN CHECK
     if (Gramps_Kill1 >= .@req1 && Gramps_Kill2 >= .@req2) {
         
-        // Calculate penalty if quest was TAKEN when player was higher than max_lv
+        // Calculate penalty if bounty was TAKEN when player was higher than max_lv
         if (Gramps_PenaltyFlag == 1) {
             .@base_exp = .@base_exp / 4;
             .@job_exp  = .@job_exp / 4;
@@ -242,7 +242,7 @@ OnHandleQuest:
         close;
     }
 
-    // ACCEPTING NEW QUEST
+    // ACCEPTING NEW BOUNTY
     Gramps_ActiveBracket = .@bracket_id;
     Gramps_Kill1 = 0;
     Gramps_Kill2 = 0;
@@ -250,7 +250,7 @@ OnHandleQuest:
     // Set penalty flag ONLY if accepted while ALREADY higher than the upper bracket limit
     if (BaseLevel > .@max_lv) {
         Gramps_PenaltyFlag = 1;
-        .@warning$ = "\n\n^FF0000Warning: Because your level is above Level " + .@max_lv + ", this quest will reward 25% EXP upon turn-in.^000000";
+        .@warning$ = "\n\n^FF0000Warning: Because your level is above Level " + .@max_lv + ", this bounty will reward 25% EXP upon turn-in.^000000";
     } else {
         Gramps_PenaltyFlag = 0;
         .@warning$ = "";
