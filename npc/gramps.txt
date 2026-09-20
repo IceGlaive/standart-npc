@@ -18,6 +18,8 @@
 //=   reducing EXP payout to 1/4th. Taking a quest ON-LEVEL and
 //=   leveling past max during the hunt keeps Gramps_PenaltyFlag = 0
 //=   and yields 100% full EXP reward.
+//= - Ongoing quests can be abandoned via the dynamic main menu option
+//=   with target details explicitly highlighted in the confirmation menu.
 //============================================================
 
 prontera,147,172,5	script	Gramps	843,{
@@ -28,8 +30,53 @@ prontera,147,172,5	script	Gramps	843,{
     mes "I have level-bracketed Turn-In quests available. You can even take lower-tier bounties if you prefer, though over-level bounties grant reduced EXP!";
     next;
 
-    .@menu = select("Check Turn-In Quests:Warp to Hunting Map:Cancel");
+    // Build dynamic menu based on active quest state
+    if (Gramps_ActiveBracket != 0) {
+        .@quest_option$ = "Check / Turn-In Bounty:Abandon Ongoing Bounty";
+    } else {
+        .@quest_option$ = "Check Turn-In Quests";
+    }
 
+    .@menu = select(.@quest_option$ + ":Warp to Hunting Map:Cancel");
+
+    // ABANDON QUEST LOGIC
+    if (Gramps_ActiveBracket != 0 && .@menu == 2) {
+        // Resolve active bounty details for confirmation
+        switch(Gramps_ActiveBracket) {
+            case 1: .@b_name$ = "Lv 70-100 (Clock & Anolian)"; .@m1$ = "Clock"; .@m2$ = "Anolian"; break;
+            case 2: .@b_name$ = "Lv 101-125 (Kaho & Flame Shooter)"; .@m1$ = "Kaho"; .@m2$ = "Flame Shooter"; break;
+            case 3: .@b_name$ = "Lv 126-150 (Horn & Antler Scaraba)"; .@m1$ = "Horn Scaraba"; .@m2$ = "Antler Scaraba"; break;
+            case 4: .@b_name$ = "Lv 151-175 (Corrupted Robots)"; .@m1$ = "Corrupted Repair Robot"; .@m2$ = "Corrupted Exploration Rover"; break;
+            case 5: .@b_name$ = "Lv 176-200 (Corrupted Mine Mobs)"; .@m1$ = "Corrupted Jewelry Ant"; .@m2$ = "Corrupted Abyssman"; break;
+            case 6: .@b_name$ = "Lv 201+ (Corrupted Niflheim Mobs)"; .@m1$ = "Corrupted Murderer"; .@m2$ = "Corrupted Ghost Cube"; break;
+        }
+
+        mes "[Gramps]";
+        mes "Are you sure you want to give up on your current active bounty?";
+        mes "Bounty: ^0055FF" + .@b_name$ + "^000000";
+        mes "Progress: " + .@m1$ + " (" + Gramps_Kill1 + "/400), " + .@m2$ + " (" + Gramps_Kill2 + "/400)";
+        mes "\n^FF0000All progress on this quest will be permanently lost!^000000";
+        next;
+        if (select("No, keep quest:Yes, abandon bounty") == 2) {
+            Gramps_ActiveBracket = 0;
+            Gramps_Kill1 = 0;
+            Gramps_Kill2 = 0;
+            Gramps_PenaltyFlag = 0;
+            mes "[Gramps]";
+            mes "Your active bounty for ^0055FF" + .@b_name$ + "^000000 has been abandoned. You are now free to take on a new contract whenever you're ready.";
+            close;
+        }
+        mes "[Gramps]";
+        mes "Good focus! Get back out there and finish the job.";
+        close;
+    }
+
+    // Shift menu indexing if "Abandon Bounty" option was rendered
+    if (Gramps_ActiveBracket != 0 && .@menu > 2) {
+        .@menu -= 1;
+    }
+
+    // CANCEL OPTION
     if (.@menu == 3) {
         mes "[Gramps]";
         mes "Stay safe out there! Come back when you're ready to hunt.";
