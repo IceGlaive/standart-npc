@@ -1,8 +1,0 @@
-{
-  "name": "standart-npc",
-  "version": "3.9",
-  "author": "Mondo, Lil Art, Claude, and the Ragnarok Offline community",
-  "description": "All-in-one NPC pack: Warper, Buffer, Stylist, Reset (skills/stats), Job Master, Kafra Employee (save/storage/identify), Card Exchanger (cards for Old/Mystical Card Album), Tool Dealer, Smuggler, Safe Refiner, Overlook Water Dungeon quests, Costume Stone Enchanter, and Eden Group Gramps turn-in.",
-  "default": "off",
-  "requires": { "app": ">=1.0.6", "era": "any" }
-}
