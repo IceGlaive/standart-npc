@@ -3,22 +3,23 @@
 //===== By: Lil Art ===========================================
 //===== How to customize: ====================================
 //= - Per bracket (6 of them): the callsub OnHandleQuest line sets
-//=   monster IDs, kill counts needed, and EXP reward all at once
+//=   min/max level range, monster IDs, kill counts needed, and EXP reward.
 //=   -- but the kill count (400) and monster IDs are ALSO checked
 //=   separately in OnTIKill below, so change both places together.
-//= - Level requirements: appear twice per bracket -- once in the
-//=   warp menu, once in the turn-in menu -- keep both in sync.
+//= - Level requirements: minimum levels appear twice per bracket -- 
+//=   once in the warp menu, once in OnHandleQuest -- keep both in sync.
 //= - Monster counts on the maps themselves: gramps_mobs.txt, not
 //=   here.
 //= - Warp destinations: the warp lines under "MAP WARP LOGIC".
 //= - Progress is tracked per CHARACTER (Gramps_Kill1/2,
-//=   Gramps_ActiveBracket -- no # prefix). Switching this back to
-//=   account-wide would mean adding # back to all three, everywhere
-//=   they appear in this file.
-//= - An in-progress bounty holder can still turn in even if now
-//=   over the bracket's level range (Gramps_ActiveBracket != X
-//=   bypasses the level check) -- level range only blocks starting
-//=   a NEW bounty, not finishing one already active.
+//=   Gramps_ActiveBracket, Gramps_PenaltyFlag -- no # prefix).
+//= - Players can take lower-tier bounties if above max level, but
+//=   accepting an over-level bounty flags Gramps_PenaltyFlag = 1,
+//=   reducing EXP payout to 1/4th. Taking a bounty ON-LEVEL and
+//=   leveling past max during the hunt keeps Gramps_PenaltyFlag = 0
+//=   and yields 100% full EXP reward.
+//= - Ongoing bounties can be abandoned via the dynamic main menu option
+//=   with target details explicitly highlighted in the confirmation menu.
 //============================================================
 
 prontera,147,172,5	script	Gramps	843,{
@@ -26,11 +27,56 @@ prontera,147,172,5	script	Gramps	843,{
 
     mes "[Gramps]";
     mes "Hello there, adventurer! The Eden Group keeps me busy coordinating hunting bounties for mercenaries.";
-    mes "I have level-bracketed Turn-In quests available. Would you like to take on a bounty or head straight to the hunting grounds?";
+    mes "I have level-bracketed Turn-In bounties available. You can even take lower-tier bounties if you prefer, though over-level bounties grant reduced EXP!";
     next;
 
-    .@menu = select("Check Turn-In Quests:Warp to Hunting Map:Cancel");
+    // Build dynamic menu based on active bounty state
+    if (Gramps_ActiveBracket != 0) {
+        .@quest_option$ = "Check / Turn-In Bounty:Abandon Ongoing Bounty";
+    } else {
+        .@quest_option$ = "Check / Take Bounties";
+    }
 
+    .@menu = select(.@quest_option$ + ":Warp to Hunting Map:Cancel");
+
+    // ABANDON BOUNTY LOGIC
+    if (Gramps_ActiveBracket != 0 && .@menu == 2) {
+        // Resolve active bounty details for confirmation
+        switch(Gramps_ActiveBracket) {
+            case 1: .@b_name$ = "Lv 70-100 (Clock & Anolian)"; .@m1$ = "Clock"; .@m2$ = "Anolian"; break;
+            case 2: .@b_name$ = "Lv 101-125 (Kaho & Flame Shooter)"; .@m1$ = "Kaho"; .@m2$ = "Flame Shooter"; break;
+            case 3: .@b_name$ = "Lv 126-150 (Horn & Antler Scaraba)"; .@m1$ = "Horn Scaraba"; .@m2$ = "Antler Scaraba"; break;
+            case 4: .@b_name$ = "Lv 151-175 (Corrupted Robots)"; .@m1$ = "Corrupted Repair Robot"; .@m2$ = "Corrupted Exploration Rover"; break;
+            case 5: .@b_name$ = "Lv 176-200 (Corrupted Mine Mobs)"; .@m1$ = "Corrupted Jewelry Ant"; .@m2$ = "Corrupted Abyssman"; break;
+            case 6: .@b_name$ = "Lv 201+ (Corrupted Niflheim Mobs)"; .@m1$ = "Corrupted Murderer"; .@m2$ = "Corrupted Ghost Cube"; break;
+        }
+
+        mes "[Gramps]";
+        mes "Are you sure you want to give up on your current active bounty?";
+        mes "Bounty: ^0055FF" + .@b_name$ + "^000000";
+        mes "Progress: " + .@m1$ + " (" + Gramps_Kill1 + "/400), " + .@m2$ + " (" + Gramps_Kill2 + "/400)";
+        mes "\n^FF0000All progress on this bounty will be permanently lost!^000000";
+        next;
+        if (select("No, keep bounty:Yes, abandon bounty") == 2) {
+            Gramps_ActiveBracket = 0;
+            Gramps_Kill1 = 0;
+            Gramps_Kill2 = 0;
+            Gramps_PenaltyFlag = 0;
+            mes "[Gramps]";
+            mes "Your active bounty for ^0055FF" + .@b_name$ + "^000000 has been abandoned. You are now free to take on a new contract whenever you're ready.";
+            close;
+        }
+        mes "[Gramps]";
+        mes "Good focus! Get back out there and finish the job.";
+        close;
+    }
+
+    // Shift menu indexing if "Abandon Bounty" option was rendered
+    if (Gramps_ActiveBracket != 0 && .@menu > 2) {
+        .@menu -= 1;
+    }
+
+    // CANCEL OPTION
     if (.@menu == 3) {
         mes "[Gramps]";
         mes "Stay safe out there! Come back when you're ready to hunt.";
@@ -42,7 +88,7 @@ prontera,147,172,5	script	Gramps	843,{
         mes "[Gramps]";
         mes "Where would you like to be deployed?";
         next;
-        .@warp_choice = select("Level 70-100 Ground (alde_dun04):Level 101-125 Ground (mag_dun02):Level 126-150 Ground (dic_dun02):Level 151-175 Ground (verus03):Level 176-200 Ground (ein_dun03):Level 201+ Ground (nif_dun01):Cancel");
+        .@warp_choice = select("Level 70+ Ground (alde_dun04):Level 101+ Ground (mag_dun02):Level 126+ Ground (dic_dun02):Level 151+ Ground (verus03):Level 176+ Ground (ein_dun03):Level 201+ Ground (nif_dun01):Cancel");
 
         switch(.@warp_choice) {
             case 1:
@@ -98,7 +144,7 @@ prontera,147,172,5	script	Gramps	843,{
         }
     }
 
-    // TURN-IN QUEST LOGIC
+    // TURN-IN BOUNTY LOGIC
     mes "[Gramps]";
     mes "Select a level bracket suitable for your current Base Level:";
     next;
@@ -107,57 +153,27 @@ prontera,147,172,5	script	Gramps	843,{
 
     switch(.@bracket) {
         case 1: // Lv 70 - 100 Bracket (Clock & Anolian)
-            if (Gramps_ActiveBracket != 1 && ( .@base_lv < 70 || .@base_lv > 100 )) {
-                mes "[Gramps]";
-                mes "Your level (" + .@base_lv + ") is outside the 70-100 range!";
-                close;
-            }
-            callsub OnHandleQuest, 1, 1269, 1206, 400, 400, 1500000, 1000000, "Clock", "Anolian";
+            callsub OnHandleQuest, 1, 70, 100, 1269, 1206, 400, 400, 1500000, 1000000, "Clock", "Anolian";
             break;
 
         case 2: // Lv 101 - 125 Bracket (Kaho & Flame Shooter)
-            if (Gramps_ActiveBracket != 2 && ( .@base_lv < 101 || .@base_lv > 125 )) {
-                mes "[Gramps]";
-                mes "Your level (" + .@base_lv + ") is outside the 101-125 range!";
-                close;
-            }
-            callsub OnHandleQuest, 2, 1131, 1368, 400, 400, 4500000, 3000000, "Kaho", "Flame Shooter";
+            callsub OnHandleQuest, 2, 101, 125, 1131, 1368, 400, 400, 4500000, 3000000, "Kaho", "Flame Shooter";
             break;
 
         case 3: // Lv 126 - 150 Bracket (Horn Scaraba & Antler Scaraba)
-            if (Gramps_ActiveBracket != 3 && ( .@base_lv < 126 || .@base_lv > 150 )) {
-                mes "[Gramps]";
-                mes "Your level (" + .@base_lv + ") is outside the 126-150 range!";
-                close;
-            }
-            callsub OnHandleQuest, 3, 2082, 2083, 400, 400, 12000000, 8000000, "Horn Scaraba", "Antler Scaraba";
+            callsub OnHandleQuest, 3, 126, 150, 2082, 2083, 400, 400, 12000000, 8000000, "Horn Scaraba", "Antler Scaraba";
             break;
 
         case 4: // Lv 151 - 175 Bracket (Corrupted Repair Robot & Corrupted Exploration Rover)
-            if (Gramps_ActiveBracket != 4 && ( .@base_lv < 151 || .@base_lv > 175 )) {
-                mes "[Gramps]";
-                mes "Your level (" + .@base_lv + ") is outside the 151-175 range!";
-                close;
-            }
-            callsub OnHandleQuest, 4, 3248, 3249, 400, 400, 25000000, 18000000, "Corrupted Repair Robot", "Corrupted Exploration Rover";
+            callsub OnHandleQuest, 4, 151, 175, 3248, 3249, 400, 400, 25000000, 18000000, "Corrupted Repair Robot", "Corrupted Exploration Rover";
             break;
 
         case 5: // Lv 176 - 200 Bracket (Corrupted Jewelry Ant & Corrupted Abyssman)
-            if (Gramps_ActiveBracket != 5 && ( .@base_lv < 176 || .@base_lv > 200 )) {
-                mes "[Gramps]";
-                mes "Your level (" + .@base_lv + ") is outside the 176-200 range!";
-                close;
-            }
-            callsub OnHandleQuest, 5, 20598, 20603, 400, 400, 50000000, 35000000, "Corrupted Jewelry Ant", "Corrupted Abyssman";
+            callsub OnHandleQuest, 5, 176, 200, 20598, 20603, 400, 400, 50000000, 35000000, "Corrupted Jewelry Ant", "Corrupted Abyssman";
             break;
 
         case 6: // Lv 201+ Bracket (Corrupted Murderer & Corrupted Ghost Cube)
-            if (Gramps_ActiveBracket != 6 && .@base_lv < 201) {
-                mes "[Gramps]";
-                mes "Your level (" + .@base_lv + ") is below the minimum Level 201 required!";
-                close;
-            }
-            callsub OnHandleQuest, 6, 20937, 20938, 400, 400, 100000000, 75000000, "Corrupted Murderer", "Corrupted Ghost Cube";
+            callsub OnHandleQuest, 6, 201, 999, 20937, 20938, 400, 400, 100000000, 75000000, "Corrupted Murderer", "Corrupted Ghost Cube";
             break;
 
         case 7:
@@ -165,13 +181,22 @@ prontera,147,172,5	script	Gramps	843,{
     }
     end;
 
-// Subroutine: Quest Handling Framework
+// Subroutine: Bounty Handling Framework
 OnHandleQuest:
     .@bracket_id = getarg(0);
-    .@m1 = getarg(1); .@m2 = getarg(2);
-    .@req1 = getarg(3); .@req2 = getarg(4);
-    .@base_exp = getarg(5); .@job_exp = getarg(6);
-    .@mob1_name$ = getarg(7); .@mob2_name$ = getarg(8);
+    .@min_lv     = getarg(1);
+    .@max_lv     = getarg(2);
+    .@m1         = getarg(3); .@m2 = getarg(4);
+    .@req1       = getarg(5); .@req2 = getarg(6);
+    .@base_exp   = getarg(7); .@job_exp = getarg(8);
+    .@mob1_name$ = getarg(9); .@mob2_name$ = getarg(10);
+
+    // Minimum Level Check
+    if (BaseLevel < .@min_lv) {
+        mes "[Gramps]";
+        mes "Your level (" + BaseLevel + ") is below the minimum Level " + .@min_lv + " required for this bounty!";
+        close;
+    }
 
     if (Gramps_ActiveBracket != 0 && Gramps_ActiveBracket != .@bracket_id) {
         mes "[Gramps]";
@@ -179,33 +204,60 @@ OnHandleQuest:
         close;
     }
 
+    // REWARD TURN-IN CHECK
     if (Gramps_Kill1 >= .@req1 && Gramps_Kill2 >= .@req2) {
+        
+        // Calculate penalty if bounty was TAKEN when player was higher than max_lv
+        if (Gramps_PenaltyFlag == 1) {
+            .@base_exp = .@base_exp / 4;
+            .@job_exp  = .@job_exp / 4;
+            .@penalty_note$ = " ^FF0000(Reduced EXP: Over-level Bounty)^000000";
+        } else {
+            .@penalty_note$ = "";
+        }
+
         Gramps_Kill1 = 0;
         Gramps_Kill2 = 0;
         Gramps_ActiveBracket = 0;
+        Gramps_PenaltyFlag = 0;
 
         getexp .@base_exp, .@job_exp;
         specialeffect2 154;
         mes "[Gramps]";
-        mes "Outstanding job! Here is your reward:";
+        mes "Outstanding job! Here is your reward" + .@penalty_note$ + ":";
         mes "^0055FF+" + .@base_exp + " Base EXP^000000";
         mes "^0055FF+" + .@job_exp + " Job EXP^000000";
         close;
     }
 
+    // ALREADY ACCEPTED CHECK
     if (Gramps_ActiveBracket == .@bracket_id) {
         mes "[Gramps]";
         mes "You still have active bounties for this bracket! Current progress:";
         mes "- " + .@mob1_name$ + ": ^0055FF" + Gramps_Kill1 + "^000000 / " + .@req1;
         mes "- " + .@mob2_name$ + ": ^0055FF" + Gramps_Kill2 + "^000000 / " + .@req2;
+        if (Gramps_PenaltyFlag == 1) {
+            mes "^FF0000* Note: This bounty was accepted above the recommended level range and will reward 1/4th EXP.^000000";
+        }
         close;
     }
 
+    // ACCEPTING NEW BOUNTY
     Gramps_ActiveBracket = .@bracket_id;
     Gramps_Kill1 = 0;
     Gramps_Kill2 = 0;
+
+    // Set penalty flag ONLY if accepted while ALREADY higher than the upper bracket limit
+    if (BaseLevel > .@max_lv) {
+        Gramps_PenaltyFlag = 1;
+        .@warning$ = "\n\n^FF0000Warning: Because your level is above Level " + .@max_lv + ", this bounty will reward 25% EXP upon turn-in.^000000";
+    } else {
+        Gramps_PenaltyFlag = 0;
+        .@warning$ = "";
+    }
+
     mes "[Gramps]";
-    mes "Bounty accepted! Defeat " + .@req1 + "x ^0055FF" + .@mob1_name$ + "^000000 and " + .@req2 + "x ^0055FF" + .@mob2_name$ + "^000000, then return to me for your EXP reward.";
+    mes "Bounty accepted! Defeat " + .@req1 + "x ^0055FF" + .@mob1_name$ + "^000000 and " + .@req2 + "x ^0055FF" + .@mob2_name$ + "^000000, then return to me for your EXP reward." + .@warning$;
     close;
 }
 
