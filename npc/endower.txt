@@ -1,0 +1,63 @@
+//===== rAthena Script =======================================
+//= Master Nokzin & Assistant Denrik (Elemental Endows)
+//===== By: Nokzin =============================================
+//===== Description: =========================================
+//= Master Nokzin endows your weapon with an element for an hour
+//= (10,000z), works on carded weapons too since it's a temporary
+//= status, not a weapon change. Removes the endow for free.
+//= Assistant Denrik sells portable Elemental Converter scrolls
+//= (weaker, 30 min) -- see db/item_db.yml.
+//===== How to customize: ====================================
+//= - Endow cost/duration: the 10000/3600000 in case 1.
+//= - Converter scroll price: the :20000 entries on Denrik's shop
+//=   line below (duration is in db/item_db.yml instead).
+//= - Location/sprite: the first line of each NPC block.
+//============================================================
+
+prontera,164,166,2	script	Master Nokzin#endowersage	743,{
+	mes "[Master Nokzin]";
+	mes "I can lay an element on your weapon for an hour. Ten thousand zeny, and it wears off clean when the hour's up -- or right now, if you'd rather have it off early.";
+	next;
+
+	switch(select("Endow my weapon (10,000z)","Remove my endow (free)","What about converter scrolls?","Never mind")) {
+	case 1:
+		next;
+		mes "[Master Nokzin]";
+		mes "Pick your element.";
+		next;
+		setarray .@ename$[0], "Fire","Water","Wind","Earth";
+		.@e = select("Fire","Water","Wind","Earth") - 1;
+
+		if (Zeny < 10000) {
+			mes "[Master Nokzin]";
+			mes "Ten thousand zeny. Come back when you have it.";
+			close;
+		}
+		Zeny -= 10000;
+		// sc_start's status type must be a literal constant, not a
+		// variable, hence the if/else instead of an array lookup.
+		if (.@e == 0) sc_start SC_FIREWEAPON,3600000,5;
+		else if (.@e == 1) sc_start SC_WATERWEAPON,3600000,5;
+		else if (.@e == 2) sc_start SC_WINDWEAPON,3600000,5;
+		else sc_start SC_EARTHWEAPON,3600000,5;
+		mes "[Master Nokzin]";
+		mes .@ename$[.@e] + ", one hour, starting now.";
+		close;
+	case 2:
+		sc_end SC_FIREWEAPON;
+		sc_end SC_WATERWEAPON;
+		sc_end SC_WINDWEAPON;
+		sc_end SC_EARTHWEAPON;
+		mes "[Master Nokzin]";
+		mes "There. Back to plain steel.";
+		close;
+	case 3:
+		mes "[Master Nokzin]";
+		mes "Denrik, right there, sells Elemental Converters if you'd rather carry the element with you than pay me each time. Only lasts half as long as what I do, but it's yours to carry.";
+		close;
+	case 4:
+		close;
+	}
+}
+
+prontera,164,163,2	shop	Assistant Denrik#endowersage	742,12114:20000,12115:20000,12116:20000,12117:20000
