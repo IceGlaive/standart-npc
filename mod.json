@@ -1,8 +1,8 @@
 {
   "name": "standart-npc",
-  "version": "4.0",
+  "version": "4.2.0",
   "author": "Mondo, Lil Art, IceGlaive, Nokzin, Claude, and the Ragnarok Offline community",
-  "description": "All-in-one NPC pack: Warper, Buffer, Stylist, Reset (skills/stats), Job Master, Kafra Employee (save/storage/identify), Card Exchanger (cards for Old/Mystical Card Album), Tool Dealer, Smuggler, Safe Refiner, Overlook Water Dungeon quests, Costume Stone Enchanter, Eden Group Gramps turn-in, and Master Nokzin/Assistant Denrik (elemental weapon endows).",
+  "description": "All-in-one NPC pack: Warper, Buffer, Stylist, Reset (skills/stats), Job Master, Kafra Employee (save/storage/identify), Card Exchanger (cards for Old/Mystical Card Album), Tool Dealer, Smuggler, Safe Refiner, Overlook Water Dungeon quests, Costume Stone Enchanter, Eden Group Gramps turn-in, Master Nokzin, Dummies, Cheffenia MVP Dungeon, Illusion Dungeon bounties, and Weight Maxxer.",
   "default": "off",
   "requires": { "app": ">=1.0.9", "era": "any" }
 }
