@@ -170,23 +170,23 @@ prontera,147,172,5	script	Gramps	843,{
             break;
 
         case 3: // Lv 126 - 150 Bracket (Horn Scaraba & Antler Scaraba)
-            callsub OnHandleQuest, 3, 126, 150, 2082, 2083, 400, 400, 12000000, 8000000, "Horn Scaraba", "Antler Scaraba";
+            callsub OnHandleQuest, 3, 126, 150, 2082, 2083, 400, 400, 45000000, 30000000, "Horn Scaraba", "Antler Scaraba";
             break;
 
         case 4: // Lv 151 - 175 Bracket (Corrupted Repair Robot & Corrupted Exploration Rover)
-            callsub OnHandleQuest, 4, 151, 175, 3248, 3249, 400, 400, 25000000, 18000000, "Corrupted Repair Robot", "Corrupted Exploration Rover";
+            callsub OnHandleQuest, 4, 151, 175, 3248, 3249, 400, 400, 75000000, 40000000, "Corrupted Repair Robot", "Corrupted Exploration Rover";
             break;
 
         case 5: // Lv 176 - 200 Bracket (Corrupted Jewelry Ant & Corrupted Abyssman)
-            callsub OnHandleQuest, 5, 176, 200, 20598, 20603, 400, 400, 50000000, 35000000, "Corrupted Jewelry Ant", "Corrupted Abyssman";
+            callsub OnHandleQuest, 5, 176, 200, 20598, 20603, 400, 400, 150000000, 100000000, "Corrupted Jewelry Ant", "Corrupted Abyssman";
             break;
 
         case 6: // Lv 201 - 230 Bracket (Corrupted Murderer & Corrupted Ghost Cube)
-            callsub OnHandleQuest, 6, 201, 230, 20937, 20938, 400, 400, 100000000, 75000000, "Corrupted Murderer", "Corrupted Ghost Cube";
+            callsub OnHandleQuest, 6, 201, 230, 20937, 20938, 400, 400, 300000000, 200000000, "Corrupted Murderer", "Corrupted Ghost Cube";
             break;
 
         case 7: // Lv 231+ Bracket (Corrupted Murderer & Corrupted Ghost Cube, deep Niflheim)
-            callsub OnHandleQuest, 7, 231, 999, 20937, 20938, 400, 400, 150000000, 100000000, "Corrupted Murderer", "Corrupted Ghost Cube";
+            callsub OnHandleQuest, 7, 231, 999, 20937, 20938, 400, 400, 450000000, 300000000, "Corrupted Murderer", "Corrupted Ghost Cube";
             break;
 
         case 8:
