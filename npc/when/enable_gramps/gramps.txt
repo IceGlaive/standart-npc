@@ -15,7 +15,7 @@
 //=   Gramps_ActiveBracket, Gramps_PenaltyFlag -- no # prefix).
 //= - Players can take lower-tier bounties if above max level, but
 //=   accepting an over-level bounty flags Gramps_PenaltyFlag = 1,
-//=   reducing EXP payout to 1/4th. Taking a bounty ON-LEVEL and
+//=   reducing EXP payout to 75% (a 25% penalty). Taking a bounty ON-LEVEL and
 //=   leveling past max during the hunt keeps Gramps_PenaltyFlag = 0
 //=   and yields 100% full EXP reward.
 //= - Ongoing bounties can be abandoned via the dynamic main menu option
@@ -220,11 +220,11 @@ OnHandleQuest:
     // REWARD TURN-IN CHECK
     if (Gramps_Kill1 >= .@req1 && Gramps_Kill2 >= .@req2) {
 
-        // Calculate penalty if bounty was TAKEN when player was higher than max_lv
+        // Calculate penalty if bounty was TAKEN when player was higher than max_lv (75% EXP payout)
         if (Gramps_PenaltyFlag == 1) {
-            .@base_exp = .@base_exp / 4;
-            .@job_exp  = .@job_exp / 4;
-            .@penalty_note$ = " ^FF0000(Reduced EXP: Over-level Bounty)^000000";
+            .@base_exp = ( .@base_exp * 3 ) / 4;
+            .@job_exp  = ( .@job_exp * 3 ) / 4;
+            .@penalty_note$ = " ^FF0000(Reduced EXP: Over-level Bounty - 75% Payout)^000000";
         } else {
             .@penalty_note$ = "";
         }
@@ -250,7 +250,7 @@ OnHandleQuest:
         mes "- " + .@mob1_name$ + ": ^0055FF" + Gramps_Kill1 + "^000000 / " + .@req1;
         mes "- " + .@mob2_name$ + ": ^0055FF" + Gramps_Kill2 + "^000000 / " + .@req2;
         if (Gramps_PenaltyFlag == 1) {
-            mes "^FF0000* Note: This bounty was accepted above the recommended level range and will reward 1/4th EXP.^000000";
+            mes "^FF0000* Note: This bounty was accepted above the recommended level range and will reward 75% EXP.^000000";
         }
         close;
     }
@@ -263,7 +263,7 @@ OnHandleQuest:
     // Set penalty flag ONLY if accepted while ALREADY higher than the upper bracket limit
     if (BaseLevel > .@max_lv) {
         Gramps_PenaltyFlag = 1;
-        .@warning$ = "\n\n^FF0000Warning: Because your level is above Level " + .@max_lv + ", this bounty will reward 25% EXP upon turn-in.^000000";
+        .@warning$ = "\n\n^FF0000Warning: Because your level is above Level " + .@max_lv + ", this bounty will reward 75% EXP upon turn-in.^000000";
     } else {
         Gramps_PenaltyFlag = 0;
         .@warning$ = "";
