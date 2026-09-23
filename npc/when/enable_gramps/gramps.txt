@@ -15,7 +15,7 @@
 //=   Gramps_ActiveBracket, Gramps_PenaltyFlag -- no # prefix).
 //= - Players can take lower-tier bounties if above max level, but
 //=   accepting an over-level bounty flags Gramps_PenaltyFlag = 1,
-//=   reducing EXP payout to 1/4th. Taking a bounty ON-LEVEL and
+//=   reducing EXP payout to 75% (a 25% penalty). Taking a bounty ON-LEVEL and
 //=   leveling past max during the hunt keeps Gramps_PenaltyFlag = 0
 //=   and yields 100% full EXP reward.
 //= - Ongoing bounties can be abandoned via the dynamic main menu option
@@ -49,7 +49,7 @@ prontera,147,172,5	script	Gramps	843,{
             case 4: .@b_name$ = "Lv 151-175 (Corrupted Robots)"; .@m1$ = "Corrupted Repair Robot"; .@m2$ = "Corrupted Exploration Rover"; break;
             case 5: .@b_name$ = "Lv 176-200 (Corrupted Mine Mobs)"; .@m1$ = "Corrupted Jewelry Ant"; .@m2$ = "Corrupted Abyssman"; break;
             case 6: .@b_name$ = "Lv 201-230 (Corrupted Niflheim Mobs)"; .@m1$ = "Corrupted Murderer"; .@m2$ = "Corrupted Ghost Cube"; break;
-            case 7: .@b_name$ = "Lv 231+ (Corrupted Niflheim Mobs, Deep)"; .@m1$ = "Corrupted Murderer"; .@m2$ = "Corrupted Ghost Cube"; break;
+            case 7: .@b_name$ = "Lv 231+ (Deep Niflheim Mobs)"; .@m1$ = "Corrupted Grote"; .@m2$ = "Corrupted Blue Moon Loli Ruri"; break;
         }
 
         mes "[Gramps]";
@@ -185,8 +185,8 @@ prontera,147,172,5	script	Gramps	843,{
             callsub OnHandleQuest, 6, 201, 230, 20937, 20938, 400, 400, 300000000, 200000000, "Corrupted Murderer", "Corrupted Ghost Cube";
             break;
 
-        case 7: // Lv 231+ Bracket (Corrupted Murderer & Corrupted Ghost Cube, deep Niflheim)
-            callsub OnHandleQuest, 7, 231, 999, 20937, 20938, 400, 400, 450000000, 300000000, "Corrupted Murderer", "Corrupted Ghost Cube";
+        case 7: // Lv 231+ Bracket (Corrupted Grote & Corrupted Blue Moon Loli Ruri)
+            callsub OnHandleQuest, 7, 231, 999, 20941, 20940, 400, 400, 450000000, 300000000, "Corrupted Grote", "Corrupted Blue Moon Loli Ruri";
             break;
 
         case 8:
@@ -220,11 +220,11 @@ OnHandleQuest:
     // REWARD TURN-IN CHECK
     if (Gramps_Kill1 >= .@req1 && Gramps_Kill2 >= .@req2) {
 
-        // Calculate penalty if bounty was TAKEN when player was higher than max_lv
+        // Calculate penalty if bounty was TAKEN when player was higher than max_lv (75% EXP payout)
         if (Gramps_PenaltyFlag == 1) {
-            .@base_exp = .@base_exp / 4;
-            .@job_exp  = .@job_exp / 4;
-            .@penalty_note$ = " ^FF0000(Reduced EXP: Over-level Bounty)^000000";
+            .@base_exp = ( .@base_exp * 3 ) / 4;
+            .@job_exp  = ( .@job_exp * 3 ) / 4;
+            .@penalty_note$ = " ^FF0000(Reduced EXP: Over-level Bounty - 75% Payout)^000000";
         } else {
             .@penalty_note$ = "";
         }
@@ -250,7 +250,7 @@ OnHandleQuest:
         mes "- " + .@mob1_name$ + ": ^0055FF" + Gramps_Kill1 + "^000000 / " + .@req1;
         mes "- " + .@mob2_name$ + ": ^0055FF" + Gramps_Kill2 + "^000000 / " + .@req2;
         if (Gramps_PenaltyFlag == 1) {
-            mes "^FF0000* Note: This bounty was accepted above the recommended level range and will reward 1/4th EXP.^000000";
+            mes "^FF0000* Note: This bounty was accepted above the recommended level range and will reward 75% EXP.^000000";
         }
         close;
     }
@@ -263,7 +263,7 @@ OnHandleQuest:
     // Set penalty flag ONLY if accepted while ALREADY higher than the upper bracket limit
     if (BaseLevel > .@max_lv) {
         Gramps_PenaltyFlag = 1;
-        .@warning$ = "\n\n^FF0000Warning: Because your level is above Level " + .@max_lv + ", this bounty will reward 25% EXP upon turn-in.^000000";
+        .@warning$ = "\n\n^FF0000Warning: Because your level is above Level " + .@max_lv + ", this bounty will reward 75% EXP upon turn-in.^000000";
     } else {
         Gramps_PenaltyFlag = 0;
         .@warning$ = "";
@@ -348,7 +348,7 @@ OnTIKill:
             dispbottom "[Gramps Bounty] Corrupted Abyssman: [" + Gramps_Kill2 + "/400]";
         }
     }
-    else if (Gramps_ActiveBracket == 6 || Gramps_ActiveBracket == 7) {
+    else if (Gramps_ActiveBracket == 6) {
         if (.@killed_id == 20937 && Gramps_Kill1 < 400) {
             Gramps_Kill1 += 1;
             dispbottom "[Gramps Bounty] Corrupted Murderer: [" + Gramps_Kill1 + "/400]";
@@ -356,6 +356,16 @@ OnTIKill:
         if (.@killed_id == 20938 && Gramps_Kill2 < 400) {
             Gramps_Kill2 += 1;
             dispbottom "[Gramps Bounty] Corrupted Ghost Cube: [" + Gramps_Kill2 + "/400]";
+        }
+    }
+    else if (Gramps_ActiveBracket == 7) {
+        if (.@killed_id == 20941 && Gramps_Kill1 < 400) {
+            Gramps_Kill1 += 1;
+            dispbottom "[Gramps Bounty] Corrupted Grote: [" + Gramps_Kill1 + "/400]";
+        }
+        if (.@killed_id == 20940 && Gramps_Kill2 < 400) {
+            Gramps_Kill2 += 1;
+            dispbottom "[Gramps Bounty] Corrupted Blue Moon Loli Ruri: [" + Gramps_Kill2 + "/400]";
         }
     }
     end;
