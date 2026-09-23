@@ -91,6 +91,6 @@ Initial release.
 
 ## 4.4.1
 - Gramps: over-level bounty penalty reduced -- you now keep 75% of the reward instead of 25%, to better balance against Illusion and MVP rewards.
-- Gramps: fixed the 231+ bracket -- its hunt target changed to Corrupted Grote and Corrupted Blue Moon Loli Ruri (nif_dun02), and the kill tracker (previously shared with the 201-230 bracket, still checking the old monster IDs) now has its own separate check matching the new monsters. Bounty was previously uncompletable after the monster swap; now fixed.
+- Gramps: fixed the 231+ bracket -- its hunt target changed to Corrupted Grote and Corrupted Blue Moon Loli Ruri (nif_dun02), and the kill tracker now has its own separate check matching the new monsters. Bounty was previously uncompletable after the monster swap; now fixed.
 - Gramps: the 101-125 bracket's hunt target changed from Kaho & Flame Shooter to Nightmare Terror & Blazer.
 - Thanks to IceGlaive for the penalty rebalance and the 231+ bracket fix.
