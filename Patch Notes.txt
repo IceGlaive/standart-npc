@@ -35,7 +35,7 @@ Initial release.
 ## 3.5
 - Split Tool Dealer and Smuggler back into two separate NPCs. Tool Dealer is a plain fixed shop again, same spot. Smuggler now only does buy-any-item-by-ID special orders, moved next to Tool Dealer (prontera 144,174).
 - Added 4 new NPCs by Lil Art: Safe Refiner, Overlook Fisherman, Costume Stone Enchanter, and Eden Group Gramps turn-in.
-- Author credit updated: Mondo, Lil Art, Claude, and the Ragnarok Offline community.
+- Author credit updated: MondoTruth, Lil Art, Claude, and the Ragnarok Offline community.
 - Buffer: added Soul Link, Poem of Bragi, Kaupe, and Kaizel. Heal now applies after every buff, so it accounts for any HP increase from them.
 - Job Master: fixed a bug where changing straight to 3rd class without rebirthing first could break the character. Only Rebirth is offered until the character has actually transcended.
 
@@ -94,3 +94,8 @@ Initial release.
 - Gramps: fixed the 231+ bracket -- its hunt target changed to Corrupted Grote and Corrupted Blue Moon Loli Ruri (nif_dun02), and the kill tracker now has its own separate check matching the new monsters. Bounty was previously uncompletable after the monster swap; now fixed.
 - Gramps: the 101-125 bracket's hunt target changed from Kaho & Flame Shooter to Nightmare Terror & Blazer.
 - Thanks to IceGlaive for the penalty rebalance and the 231+ bracket fix.
+
+## 4.5.0
+- Added Lucky John (prontera 138,172) -- daily Mercenary Guild area-purge contracts: kill any 500 monsters on your assigned map. 9 level brackets from Lv 30 to 231+, one contract per day per character.
+- Smuggler: now detects the server era automatically. On Renewal, Healing items moved off the flat 10,000,000z price onto the normal item price x5. On Pre-renewal the flat price is gone entirely -- every item costs its normal price x2 (2,000z if the item has no price).
+- Thanks to IceGlaive for Lucky John.
