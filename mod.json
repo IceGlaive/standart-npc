@@ -45,6 +45,13 @@
       "description": "Hunting bounties, 7 level brackets from 70 to 231+. Prontera (147,172)."
     },
     {
+      "key": "enable_luckyjohn",
+      "type": "boolean",
+      "default": true,
+      "label": "Lucky John",
+      "description": "Area purge bounties, 9 level brackets from 30 to 231+. Prontera (138,172)."
+    },
+    {
       "key": "enable_illusion",
       "type": "boolean",
       "default": true,
