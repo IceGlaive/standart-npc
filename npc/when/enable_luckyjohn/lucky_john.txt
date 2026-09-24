@@ -1,31 +1,20 @@
 //===== rAthena Script =======================================
-//= Lucky John - Mercenary Guild Area Purge Bounties
-//= Multi-Map Variant System (500 Kills)
-//= Fully Character-Scoped (Variables & Progress)
+//= Lucky John
+//===== By: IceGlaive ========================================
+//===== Description: =========================================
+//= Per-character daily Mercenary Guild area-purge contracts.
+//= Assigns 500 monster kills in a level-appropriate zone.
+//===== How to customize: ====================================
+//= - Level brackets and maps: OnAssignRandomMap
+//= - Reward values (EXP/Zeny): switch statement in main block
+//= - Required kill count (default 500): change 500 checks & OnNPCKillEvent
 //============================================================
 
 prontera,138,172,5	script	Lucky John	733,{
     .@base_lv = BaseLevel;
-    .@today = gettime(5)*10000 + gettime(6)*100 + gettime(7);
+    .@today = gettime(7)*10000 + gettime(6)*100 + gettime(5);
 
-    mes "[Lucky John]";
-    mes "Greetings, adventurer!";
-    mes "Due to widespread reports of monster invasions across the realm, local authorities are overwhelmed.";
-    mes "The Mercenary Guild has been contracted to handle large-scale area purges to restore order!";
-    next;
-    mes "[Lucky John]";
-    mes "Instead of hunting down specific targets, your objective is to purge any 500 monsters in your assigned zone to thin their swelling ranks.";
-    next;
-
-    // Daily Completion Check (Per Character)
-    if (LuckyJohn_ActiveBracket == 0 && LuckyJohn_LastDone == .@today) {
-        mes "[Lucky John]";
-        mes "You have already completed today's clearance contract on this character.";
-        mes "Come back tomorrow for a new target sector!";
-        close;
-    }
-
-    // Active Bounty Check (Per Character)
+    // Active Bounty Check (Per Character) - Skips intro dialog if contract is already active
     if (LuckyJohn_ActiveBracket != 0) {
         .@map_display_name$ = callsub(OnGetMapInfo, LuckyJohn_TargetMap$);
 
@@ -37,29 +26,31 @@ prontera,138,172,5	script	Lucky John	733,{
         next;
 
         if (LuckyJohn_Kill1 >= 500) {
-            // Calculate and assign rewards (1.0x Gramps up to Lv 100, 1.5x Gramps after)
+            // Calculate and assign rewards (1:1 Gramps Baseline)
             switch(LuckyJohn_ActiveBracket) {
                 case 1: .@reward_base = 1800000;   .@reward_job = 1250000;   .@reward_zeny = 50000;    break;
                 case 2: .@reward_base = 5500000;   .@reward_job = 3650000;   .@reward_zeny = 125000;   break;
                 case 3: .@reward_base = 9250000;   .@reward_job = 6150000;   .@reward_zeny = 250000;   break;
-                case 4: .@reward_base = 25000000;  .@reward_job = 16500000;  .@reward_zeny = 500000;   break;
-                case 5: .@reward_base = 82500000;  .@reward_job = 55000000;  .@reward_zeny = 1000000;  break;
-                case 6: .@reward_base = 140000000; .@reward_job = 75000000;  .@reward_zeny = 1750000;  break;
-                case 7: .@reward_base = 275000000; .@reward_job = 190000000; .@reward_zeny = 2500000;  break;
-                case 8: .@reward_base = 550000000; .@reward_job = 375000000; .@reward_zeny = 3750000;  break;
-                case 9: .@reward_base = 825000000; .@reward_job = 550000000; .@reward_zeny = 5000000;  break;
+                case 4: .@reward_base = 16500000;  .@reward_job = 11000000;  .@reward_zeny = 500000;   break;
+                case 5: .@reward_base = 55000000;  .@reward_job = 36500000;  .@reward_zeny = 1000000;  break;
+                case 6: .@reward_base = 92500000;  .@reward_job = 50000000;  .@reward_zeny = 1750000;  break;
+                case 7: .@reward_base = 180000000; .@reward_job = 125000000; .@reward_zeny = 2500000;  break;
+                case 8: .@reward_base = 365000000; .@reward_job = 250000000; .@reward_zeny = 3750000;  break;
+                case 9: .@reward_base = 550000000; .@reward_job = 365000000; .@reward_zeny = 5000000;  break;
             }
 
             getexp .@reward_base, .@reward_job;
             Zeny += .@reward_zeny;
             specialeffect2 154;
 
-            .@was_previous_day = (LuckyJohn_LastDone < .@today);
+            .@was_previous_day = (LuckyJohn_AcceptDay < .@today);
+            if (!.@was_previous_day)
+                LuckyJohn_LastDone = .@today;
 
             LuckyJohn_ActiveBracket = 0;
             LuckyJohn_TargetMap$ = "";
             LuckyJohn_Kill1 = 0;
-            LuckyJohn_LastDone = .@today;
+            LuckyJohn_AcceptDay = 0;
 
             mes "[Lucky John]";
             mes "Phenomenal work! Zone cleared successfully.";
@@ -69,9 +60,9 @@ prontera,138,172,5	script	Lucky John	733,{
             mes "^0055FF+" + .@reward_zeny + " Zeny^000000";
             next;
 
-            if (.@was_previous_day && LuckyJohn_LastDone != .@today) {
+            if (.@was_previous_day) {
                 mes "[Lucky John]";
-                mes "That settles your pending contract—you are free to take on today's contract immediately!";
+                mes "That settles your pending contract--you are free to take on today's contract immediately!";
             } else {
                 mes "[Lucky John]";
                 mes "All contracts completed for today. See you tomorrow!";
@@ -88,11 +79,29 @@ prontera,138,172,5	script	Lucky John	733,{
                 LuckyJohn_ActiveBracket = 0;
                 LuckyJohn_TargetMap$ = "";
                 LuckyJohn_Kill1 = 0;
+                LuckyJohn_AcceptDay = 0;
                 mes "[Lucky John]";
                 mes "Contract terminated. Speak with me when you're ready for a new location.";
                 close;
             }
         }
+        close;
+    }
+
+    mes "[Lucky John]";
+    mes "Greetings, adventurer!";
+    mes "Due to widespread reports of monster invasions across the realm, local authorities are overwhelmed.";
+    mes "The Mercenary Guild has been contracted to handle large-scale area purges to restore order!";
+    next;
+    mes "[Lucky John]";
+    mes "Instead of hunting down specific targets, your objective is to purge any 500 monsters in your assigned zone to thin their swelling ranks.";
+    next;
+
+    // Daily Completion Check (Per Character)
+    if (LuckyJohn_LastDone == .@today) {
+        mes "[Lucky John]";
+        mes "You have already completed today's clearance contract on this character.";
+        mes "Come back tomorrow for a new target sector!";
         close;
     }
 
@@ -116,6 +125,7 @@ prontera,138,172,5	script	Lucky John	733,{
     .@map_display_name$ = callsub(OnGetMapInfo, LuckyJohn_TargetMap$);
 
     LuckyJohn_Kill1 = 0;
+    LuckyJohn_AcceptDay = .@today;
 
     mes "[Lucky John]";
     mes "Your assignment is locked in!";
@@ -205,50 +215,50 @@ OnGetMapInfo:
     .@name$ = "";
     
     if (.@map$ == "orcsdun01")       .@name$ = "Orc Dungeon Level 1";
-    else if (.@map$ == "pay_dun01")  .@name$ = "Payon Cave Level 2 (pay_dun01)";
-    else if (.@map$ == "xmas_dun01") .@name$ = "Toy Factory Warehouse (xmas_dun01)";
-    else if (.@map$ == "xmas_dun02") .@name$ = "Toy Factory Level 2 (xmas_dun02)";
+    else if (.@map$ == "pay_dun01")  .@name$ = "Payon Cave Level 2";
+    else if (.@map$ == "xmas_dun01") .@name$ = "Toy Factory Warehouse";
+    else if (.@map$ == "xmas_dun02") .@name$ = "Toy Factory Level 2";
 
-    else if (.@map$ == "pay_dun03")  .@name$ = "Payon Cave Level 4 (pay_dun03)";
-    else if (.@map$ == "cmd_fild03") .@name$ = "Zenhai Marsh (cmd_fild03)";
-    else if (.@map$ == "mosk_fild02").@name$ = "Okrestnosti of Moscovia (mosk_fild02)";
-    else if (.@map$ == "gon_fild01") .@name$ = "Gonryun Field (gon_fild01)";
-    else if (.@map$ == "bra_fild01") .@name$ = "Brasilis Field (bra_fild01)";
-    else if (.@map$ == "mjolnir_04") .@name$ = "Mt. Mjolnir 04 (mjolnir_04)";
-    else if (.@map$ == "um_fild01")  .@name$ = "Luluka Forest (um_fild01)";
+    else if (.@map$ == "pay_dun03")  .@name$ = "Payon Cave Level 4";
+    else if (.@map$ == "cmd_fild03") .@name$ = "Zenhai Marsh";
+    else if (.@map$ == "mosk_fild02").@name$ = "Okrestnosti of Moscovia";
+    else if (.@map$ == "gon_fild01") .@name$ = "Gonryun Field";
+    else if (.@map$ == "bra_fild01") .@name$ = "Brasilis Field";
+    else if (.@map$ == "mjolnir_04") .@name$ = "Mt. Mjolnir 04";
+    else if (.@map$ == "um_fild01")  .@name$ = "Luluka Forest";
 
     else if (.@map$ == "ice_dun01")  .@name$ = "Ice Cave Level 1";
     else if (.@map$ == "gl_church")  .@name$ = "Glast Heim Abbey";
     else if (.@map$ == "yuno_fild08").@name$ = "Elmes Plateau";
-    else if (.@map$ == "ra_fild12")  .@name$ = "The Plain of Ida (ra_fild12)";
-    else if (.@map$ == "mosk_dun02") .@name$ = "Temny Forest (mosk_dun02)";
-    else if (.@map$ == "gef_fild06") .@name$ = "Geffen Field 06 (gef_fild06)";
-    else if (.@map$ == "gef_fild08") .@name$ = "Geffen Field 08 (gef_fild08)";
+    else if (.@map$ == "ra_fild12")  .@name$ = "The Plain of Ida";
+    else if (.@map$ == "mosk_dun02") .@name$ = "Temny Forest";
+    else if (.@map$ == "gef_fild06") .@name$ = "Geffen Field 06";
+    else if (.@map$ == "gef_fild08") .@name$ = "Geffen Field 08";
 
     else if (.@map$ == "ra_fild01")  .@name$ = "Audhumla Grassland";
     else if (.@map$ == "beach_dun2") .@name$ = "West Cave Karu";
     else if (.@map$ == "gl_kaval01") .@name$ = "Glast Heim Chivalry 1";
-    else if (.@map$ == "ma_fild02")  .@name$ = "Dewata Forest (ma_fild02)";
+    else if (.@map$ == "ma_fild02")  .@name$ = "Dewata Forest";
 
-    else if (.@map$ == "ecl_fild01") .@name$ = "Blooming Flower Land (ecl_fild01)";
-    else if (.@map$ == "dic_fild01") .@name$ = "Kamidal Mountain Outskirts (dic_fild01)";
-    else if (.@map$ == "moc_fild22") .@name$ = "Dimensional Gorge (moc_fild22)";
-    else if (.@map$ == "gl_cas02_")  .@name$ = "Glast Heim 2nd Hall (gl_cas02_)";
+    else if (.@map$ == "ecl_fild01") .@name$ = "Blooming Flower Land";
+    else if (.@map$ == "dic_fild01") .@name$ = "Kamidal Mountain Outskirts";
+    else if (.@map$ == "moc_fild22") .@name$ = "Dimensional Gorge";
+    else if (.@map$ == "gl_cas02_")  .@name$ = "Glast Heim 2nd Hall";
 
-    else if (.@map$ == "ra_fild11")  .@name$ = "The Plain of Ida (ra_fild11)";
+    else if (.@map$ == "ra_fild11")  .@name$ = "The Plain of Ida";
     else if (.@map$ == "ba_lost")    .@name$ = "Lost Farm Valley";
     else if (.@map$ == "rockmi1")    .@name$ = "Rock Ridge Mine";
-    else if (.@map$ == "verus02")    .@name$ = "Verus Research Building - WISH (verus02)";
+    else if (.@map$ == "verus02")    .@name$ = "Verus Research Building - WISH";
 
     else if (.@map$ == "gw_fild01")  .@name$ = "Gray Wolf Forest 1";
     else if (.@map$ == "gw_fild02")  .@name$ = "Gray Wolf Forest 2";
     else if (.@map$ == "ba_2whs01")  .@name$ = "Tartaros Storage Upper Floor";
     else if (.@map$ == "ba_2whs02")  .@name$ = "Tartaros Storage Lower Floor";
-    else if (.@map$ == "gl_cas01_")  .@name$ = "Glast Heim Abyss 1F (gl_cas01_)";
+    else if (.@map$ == "gl_cas01_")  .@name$ = "Glast Heim Abyss 1F";
     else if (.@map$ == "mag_dun03")  .@name$ = "Nogg Road Dungeon 3F";
     else if (.@map$ == "sp_rudus3")  .@name$ = "Rudus 3F (Waste Disposal Plant)";
-    else if (.@map$ == "oz_dun01")   .@name$ = "Oz Labyrinth 1F (oz_dun01)";
-    else if (.@map$ == "oz_dun02")   .@name$ = "Oz Labyrinth 2F (oz_dun02)";
+    else if (.@map$ == "oz_dun01")   .@name$ = "Oz Labyrinth 1F";
+    else if (.@map$ == "oz_dun02")   .@name$ = "Oz Labyrinth 2F";
 
     else if (.@map$ == "sp_rudus4")  .@name$ = "Rudus 4F (Waste Disposal Plant)";
 
