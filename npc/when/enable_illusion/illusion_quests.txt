@@ -5,10 +5,13 @@
 //= Same bounty pattern as gramps.txt/overlook.txt: per-character
 //= progress (no # prefix), Abandon option, live kill notifications.
 //===== How to customize: ====================================
-//= - Per dungeon (9 of them): the callsub OnHandleQuest line sets
-//=   minimum level, monster IDs, kill counts, and EXP reward --
-//=   but the kill count (150) and monster IDs are ALSO checked
-//=   separately in OnIllusionKill below, so change both together.
+//= - Per dungeon (9 of them): EXP and Zeny rewards are managed in
+//=   config_shared_rewards.txt via the F_SNPC_BountyReward function.
+//= - Monster target IDs and kill counts (150) are set in the
+//=   callsub OnHandleQuest line AND checked separately in OnIllusionKill
+//=   below, so change both together.
+//= - Level requirements: minimum levels appear twice per dungeon --
+//=   once in the warp menu, once in OnHandleQuest -- keep both in sync.
 //= - Monster counts on the maps themselves: illusion_mobs.txt, not
 //=   here -- each spawn line there must keep its
 //=   Illusion_KillTracker::OnIllusionKill event field, or kills
@@ -138,28 +141,31 @@ OnHandleQuest:
 	}
 
 	if (Illusion_Kill1 >= .@req1 && Illusion_Kill2 >= .@req2 && Illusion_Kill3 >= .@req3) {
-		.@base_exp = callfunc("F_SNPC_BountyReward", "illusion", .@q_id, 0);
-		.@job_exp  = callfunc("F_SNPC_BountyReward", "illusion", .@q_id, 1);
+        .@base_exp = callfunc("F_SNPC_BountyReward", "illusion", .@q_id, 0);
+        .@job_exp  = callfunc("F_SNPC_BountyReward", "illusion", .@q_id, 1);
 
-		if (.@base_exp <= 0 || .@job_exp <= 0) {
-			mes "[Illusion Manager]";
-			mes "Reward table error -- please tell the server admin.";
-			close;
-		}
+        if (.@base_exp <= 0 || .@job_exp <= 0) {
+            mes "[Illusion Manager]";
+            mes "Reward table error -- please tell the server admin.";
+            close;
+        }
 
-		Illusion_Kill1 = 0;
-		Illusion_Kill2 = 0;
-		Illusion_Kill3 = 0;
-		Illusion_ActiveQuest = 0;
+        Illusion_Kill1 = 0;
+        Illusion_Kill2 = 0;
+        Illusion_Kill3 = 0;
+        Illusion_ActiveQuest = 0;
 
-		getexp .@base_exp, .@job_exp;
-		specialeffect2 154;
-		mes "[Illusion Manager]";
-		mes "Outstanding job! Here is your reward:";
-		mes "^0055FF+" + .@base_exp + " Base EXP^000000";
-		mes "^0055FF+" + .@job_exp + " Job EXP^000000";
-		close;
-	}
+        // Route through safe EXP chunking routine
+        callfunc("F_SNPC_GiveEXP", .@base_exp, .@job_exp);
+        specialeffect2 154;
+
+        mes "[Illusion Manager]";
+        mes "Outstanding job! Here is your reward:";
+        mes "^0055FF+" + .@base_exp + " Base EXP^000000";
+        mes "^0055FF+" + .@job_exp + " Job EXP^000000";
+        mes "\n^777777(EXP rewards are multiplied by server rates)^000000";
+        close;
+    }
 
 	if (Illusion_ActiveQuest == .@q_id) {
 		mes "[Illusion Manager]";

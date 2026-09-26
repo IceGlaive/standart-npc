@@ -4,6 +4,12 @@
 //= Description:
 //= Per-character daily Mercenary Guild area-purge contracts.
 //= Assigns 500 monster kills in a level-appropriate zone.
+//===== How to customize: ====================================
+//= - Rewards: Base EXP, Job EXP, and Zeny rewards are managed in
+//=   config_shared_rewards.txt via the F_SNPC_BountyReward function.
+//= - Level brackets and map pools: adjust OnAssignRandomMap subroutine.
+//= - Kill requirements: change the 500 threshold across OnNPCKillEvent
+//=   and main script logic together.
 //============================================================
 
 prontera,138,172,5	script	Lucky John	733,{
@@ -33,7 +39,8 @@ prontera,138,172,5	script	Lucky John	733,{
                 close;
             }
 
-            getexp .@reward_base, .@reward_job;
+            // Route through safe EXP chunking routine
+            callfunc("F_SNPC_GiveEXP", .@reward_base, .@reward_job);
             Zeny += .@reward_zeny;
             specialeffect2 154;
 
@@ -52,6 +59,7 @@ prontera,138,172,5	script	Lucky John	733,{
             mes "^0055FF+" + .@reward_base + " Base EXP^000000";
             mes "^0055FF+" + .@reward_job + " Job EXP^000000";
             mes "^0055FF+" + .@reward_zeny + " Zeny^000000";
+            mes "\n^777777(EXP rewards are multiplied by server rates)^000000";
             next;
 
             if (.@was_previous_day) {
